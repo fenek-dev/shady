@@ -24,10 +24,9 @@ func Reveal(img image.Image) string {
 
 			count += 4
 
-			if count%8 == 0 {
+			if count&7 == 0 {
 				result = append(result, curr)
 				curr = byte(0)
-				count = 0
 			}
 		}
 	}
@@ -35,5 +34,5 @@ func Reveal(img image.Image) string {
 }
 
 func decode(char byte, c uint8, i int) uint8 {
-	return char | ((c & 1) << (i % 8))
+	return char | ((c & 1) << (i & 7))
 }
