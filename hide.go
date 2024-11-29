@@ -23,7 +23,7 @@ func Hide(img image.Image, text string, opts ...Option) image.Image {
 						continue
 					}
 					char := text[count/8]
-					arr[arri] = transform(char, c, count)
+					arr[arri] = encode(char, c, count)
 					count++
 				}
 
@@ -42,23 +42,10 @@ func Hide(img image.Image, text string, opts ...Option) image.Image {
 	return newImg
 }
 
-func transform(char byte, c uint8, idx int) uint8 {
+func encode(char byte, c uint8, idx int) uint8 {
 	if char&(1<<(idx&7)) != 0 {
 		return c | 1
 	} else {
 		return c & 254
 	}
-}
-
-func isEmpty(i color.NRGBA) bool {
-	return i.R <= 1 && i.G <= 1 && i.B <= 1
-}
-
-func checkOptions(img image.Image, x, y int, opts []Option) bool {
-	for _, opt := range opts {
-		if opt(img, img.At(x, y).(color.NRGBA), x, y) {
-			return false
-		}
-	}
-	return true
 }

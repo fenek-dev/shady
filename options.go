@@ -7,6 +7,15 @@ import (
 
 type Option func(img image.Image, c color.NRGBA, x, y int) bool
 
+func checkOptions(img image.Image, x, y int, opts []Option) bool {
+	for _, opt := range opts {
+		if opt(img, img.At(x, y).(color.NRGBA), x, y) {
+			return false
+		}
+	}
+	return true
+}
+
 func WithoutEmpty() Option {
 	return func(img image.Image, c color.NRGBA, x, y int) bool {
 		return c.R <= 1 && c.G <= 1 && c.B <= 1

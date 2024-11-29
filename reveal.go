@@ -9,7 +9,6 @@ func Reveal(img image.Image, opts ...Option) string {
 	bounds := img.Bounds()
 	width, height := bounds.Dx(), bounds.Dy()
 
-	// Iterate over each pixel
 	result := make([]byte, 0, width*height/8)
 	curr := byte(0)
 	count := 0
@@ -20,12 +19,6 @@ func Reveal(img image.Image, opts ...Option) string {
 				continue
 			}
 
-			// |37 72 36
-			// 57 86 24
-			// 59 94| 31 - 94 = 72
-			// 66 106 40
-			// 72 115 46
-			// 68|  - 68 = 32
 			for _, c := range []byte{im.R, im.G, im.B} {
 				curr = decode(curr, c, count)
 				count++
