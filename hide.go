@@ -12,7 +12,12 @@ type Pixel struct {
 	X, Y  int
 }
 
-func Hide(img image.Image, text string, opts ...Option) image.Image {
+type Opts struct {
+	Conditions []Condition
+	Transforms []Transformer
+}
+
+func Hide(img image.Image, text string, opts *Opts) image.Image {
 	bounds := img.Bounds()
 	width, height := bounds.Dx(), bounds.Dy()
 
@@ -24,12 +29,14 @@ func Hide(img image.Image, text string, opts ...Option) image.Image {
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
 			i := img.At(x, y).(color.NRGBA)
-			if checkOptions(img, x, y, opts) {
+			if checkOptions(img, x, y, opts.Conditions) {
 				availablePixels = append(availablePixels, Pixel{i, x, y})
 			}
 			newImg.Set(x, y, i)
 		}
 	}
+
+	applyTransformers(&availablePixels, opts.Transforms)
 
 	// Add the length of the text to the beginning of the text
 	lilInt := int64ToBytesLE(int64(len(text)))
@@ -38,7 +45,7 @@ func Hide(img image.Image, text string, opts ...Option) image.Image {
 
 	count := 0
 	for _, pixel := range availablePixels {
-		if count/8 <= len(t)-1 && checkOptions(img, pixel.X, pixel.Y, opts) {
+		if count/8 <= len(t)-1 {
 			arr := []byte{pixel.Color.R, pixel.Color.G, pixel.Color.B}
 			for arri, c := range arr {
 				if count/8 >= len(t) {

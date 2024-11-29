@@ -23,16 +23,20 @@ func main() {
 
 	img, _ := png.Decode(fd)
 
-	opts := []Option{
-		WithoutEmpty(),
-		//WithoutBreakingConsistency(),
+	opts := &Opts{
+		Conditions: []Condition{
+			EmptyCondition(),
+		},
+		Transforms: []Transformer{
+			ReverseTransform(),
+		},
 	}
 
-	newImg := Hide(img, cipher, opts...)
+	newImg := Hide(img, cipher, opts)
 
 	CreateImage(newImg)
 
-	result, size := Reveal(newImg, opts...)
+	result, size := Reveal(newImg, opts)
 	result, err = DecryptAES(result[:], key)
 	if err != nil {
 		panic(err)

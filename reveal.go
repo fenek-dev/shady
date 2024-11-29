@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func Reveal(img image.Image, opts ...Option) (string, int64) {
+func Reveal(img image.Image, opts *Opts) (string, int64) {
 	bounds := img.Bounds()
 	width, height := bounds.Dx(), bounds.Dy()
 
@@ -14,20 +14,18 @@ func Reveal(img image.Image, opts ...Option) (string, int64) {
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
 			i := img.At(x, y).(color.NRGBA)
-			if checkOptions(img, x, y, opts) {
+			if checkOptions(img, x, y, opts.Conditions) {
 				availablePixels = append(availablePixels, Pixel{i, x, y})
 			}
 		}
 	}
 
+	applyTransformers(&availablePixels, opts.Transforms)
+
 	result := make([]byte, 0, width*height/8)
 	curr := byte(0)
 	count := 0
 	for _, pixel := range availablePixels {
-		if !checkOptions(img, pixel.X, pixel.Y, opts) {
-			continue
-		}
-
 		for _, c := range []byte{pixel.Color.R, pixel.Color.G, pixel.Color.B} {
 			curr = decode(curr, c, count)
 			count++
