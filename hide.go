@@ -5,7 +5,7 @@ import (
 	"image/color"
 )
 
-func Hide(img image.Image) image.Image {
+func Hide(img image.Image, text string, opts ...Option) image.Image {
 	bounds := img.Bounds()
 	width, height := bounds.Dx(), bounds.Dy()
 
@@ -16,7 +16,7 @@ func Hide(img image.Image) image.Image {
 		for x := 0; x < width; x++ {
 			i := img.At(x, y).(color.NRGBA)
 
-			if count/8 <= len(text)-1 && !isEmpty(i) {
+			if count/8 <= len(text)-1 && checkOptions(img, x, y, opts) {
 				arr := []byte{i.R, i.G, i.B}
 				for arri, c := range arr {
 					if count/8 >= len(text) {
@@ -52,4 +52,13 @@ func transform(char byte, c uint8, idx int) uint8 {
 
 func isEmpty(i color.NRGBA) bool {
 	return i.R <= 1 && i.G <= 1 && i.B <= 1
+}
+
+func checkOptions(img image.Image, x, y int, opts []Option) bool {
+	for _, opt := range opts {
+		if opt(img, img.At(x, y).(color.NRGBA), x, y) {
+			return false
+		}
+	}
+	return true
 }

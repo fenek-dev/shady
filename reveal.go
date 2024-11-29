@@ -5,7 +5,7 @@ import (
 	"image/color"
 )
 
-func Reveal(img image.Image) string {
+func Reveal(img image.Image, opts ...Option) string {
 	bounds := img.Bounds()
 	width, height := bounds.Dx(), bounds.Dy()
 
@@ -16,7 +16,7 @@ func Reveal(img image.Image) string {
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
 			im := img.At(x, y).(color.NRGBA)
-			if isEmpty(im) {
+			if !checkOptions(img, x, y, opts) {
 				continue
 			}
 

@@ -6,9 +6,9 @@ import (
 	"os"
 )
 
-var text = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book."
-
 func main() {
+	var text = "Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+
 	fd, err := os.Open("peppo.png")
 	if err != nil {
 		panic(err)
@@ -17,9 +17,18 @@ func main() {
 
 	img, _ := png.Decode(fd)
 
-	newImg := Hide(img)
+	opts := []Option{
+		WithoutEmpty(),
+		WithoutBreakingConsistency(),
+	}
+
+	newImg := Hide(img, text, opts...)
+
 	CreateImage(newImg)
 
-	result := Reveal(newImg)
-	log.Println(result[:len(text)] == text)
+	result := Reveal(newImg, opts...)
+
+	r := result[:len(text)]
+	log.Println(r == text)
+	log.Println(r)
 }
