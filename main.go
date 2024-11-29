@@ -7,7 +7,13 @@ import (
 )
 
 func main() {
-	var text = "Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+	key := []byte("thisis32byteslongpassphrase12341")
+	text := "Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+
+	cipher, err := EncryptAES(text, key)
+	if err != nil {
+		panic(err)
+	}
 
 	fd, err := os.Open("peppo.png")
 	if err != nil {
@@ -19,16 +25,21 @@ func main() {
 
 	opts := []Option{
 		WithoutEmpty(),
-		WithoutBreakingConsistency(),
+		//WithoutBreakingConsistency(),
 	}
 
-	newImg := Hide(img, text, opts...)
+	newImg := Hide(img, cipher, opts...)
 
 	CreateImage(newImg)
 
-	result := Reveal(newImg, opts...)
+	result, size := Reveal(newImg, opts...)
 
-	r := result[:len(text)]
+	result, err = DecryptAES(result[:size], key)
+	if err != nil {
+		panic(err)
+	}
+
+	r := result
 	log.Println(r == text)
 	log.Println(r)
 }

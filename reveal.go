@@ -3,9 +3,10 @@ package main
 import (
 	"image"
 	"image/color"
+	"log"
 )
 
-func Reveal(img image.Image, opts ...Option) string {
+func Reveal(img image.Image, opts ...Option) (string, int64) {
 	bounds := img.Bounds()
 	width, height := bounds.Dx(), bounds.Dy()
 
@@ -30,7 +31,13 @@ func Reveal(img image.Image, opts ...Option) string {
 
 		}
 	}
-	return string(result)
+
+	lilInt := result[:4]
+	size := bytesToInt64LE([4]byte(lilInt))
+
+	log.Println(size, lilInt)
+
+	return string(result[4:]), size
 }
 
 func decode(char byte, c uint8, i int) uint8 {

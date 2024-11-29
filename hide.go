@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/binary"
 	"image"
 	"image/color"
+	"log"
 )
 
 func Hide(img image.Image, text string, opts ...Option) image.Image {
@@ -11,18 +13,21 @@ func Hide(img image.Image, text string, opts ...Option) image.Image {
 
 	newImg := image.NewNRGBA(bounds)
 
+	lilInt := int64ToBytesLE(int64(len(text)))
+	log.Println(len(text), lilInt)
+	t := string(lilInt[:]) + text
 	count := 0
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
 			i := img.At(x, y).(color.NRGBA)
 
-			if count/8 <= len(text)-1 && checkOptions(img, x, y, opts) {
+			if count/8 <= len(t)-1 && checkOptions(img, x, y, opts) {
 				arr := []byte{i.R, i.G, i.B}
 				for arri, c := range arr {
-					if count/8 >= len(text) {
+					if count/8 >= len(t) {
 						continue
 					}
-					char := text[count/8]
+					char := t[count/8]
 					arr[arri] = encode(char, c, count)
 					count++
 				}
@@ -48,4 +53,14 @@ func encode(char byte, c uint8, idx int) uint8 {
 	} else {
 		return c & 254
 	}
+}
+
+func int64ToBytesLE(n int64) [4]byte {
+	var b [4]byte
+	binary.LittleEndian.PutUint32(b[:], uint32(n))
+	return b
+}
+
+func bytesToInt64LE(b [4]byte) int64 {
+	return int64(binary.LittleEndian.Uint32(b[:]))
 }
