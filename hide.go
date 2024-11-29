@@ -6,7 +6,6 @@ import (
 )
 
 func Hide(img image.Image) image.Image {
-
 	bounds := img.Bounds()
 	width, height := bounds.Dx(), bounds.Dy()
 
@@ -17,21 +16,25 @@ func Hide(img image.Image) image.Image {
 		for x := 0; x < width; x++ {
 			i := img.At(x, y).(color.NRGBA)
 
-			index := count / 8
-			if index <= len(text)-1 {
-				char := text[index]
-				c := color.NRGBA{
-					R: transform(char, i.R, count),
-					G: transform(char, i.G, count+1),
-					B: transform(char, i.B, count+2),
-					A: transform(char, i.A, count+3),
+			if count/8 <= len(text)-1 && !isEmpty(i) {
+				arr := []byte{i.R, i.G, i.B}
+				for arri, c := range arr {
+					if count/8 >= len(text) {
+						continue
+					}
+					char := text[count/8]
+					arr[arri] = transform(char, c, count)
+					count++
 				}
+
+				c := color.NRGBA{
+					R: arr[0], G: arr[1], B: arr[2], A: i.A,
+				}
+
 				newImg.Set(x, y, c)
 			} else {
 				newImg.Set(x, y, i)
 			}
-
-			count += 4
 
 		}
 	}
@@ -43,6 +46,10 @@ func transform(char byte, c uint8, idx int) uint8 {
 	if char&(1<<(idx&7)) != 0 {
 		return c | 1
 	} else {
-		return c & 0
+		return c & 254
 	}
+}
+
+func isEmpty(i color.NRGBA) bool {
+	return i.R <= 1 && i.G <= 1 && i.B <= 1
 }

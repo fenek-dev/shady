@@ -16,18 +16,25 @@ func Reveal(img image.Image) string {
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
 			im := img.At(x, y).(color.NRGBA)
-
-			curr = decode(curr, im.R, count)
-			curr = decode(curr, im.G, count+1)
-			curr = decode(curr, im.B, count+2)
-			curr = decode(curr, im.A, count+3)
-
-			count += 4
-
-			if count&7 == 0 {
-				result = append(result, curr)
-				curr = byte(0)
+			if isEmpty(im) {
+				continue
 			}
+
+			// |37 72 36
+			// 57 86 24
+			// 59 94| 31 - 94 = 72
+			// 66 106 40
+			// 72 115 46
+			// 68|  - 68 = 32
+			for _, c := range []byte{im.R, im.G, im.B} {
+				curr = decode(curr, c, count)
+				count++
+				if count&7 == 0 {
+					result = append(result, curr)
+					curr = byte(0)
+				}
+			}
+
 		}
 	}
 	return string(result)
