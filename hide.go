@@ -7,41 +7,57 @@ import (
 	"log"
 )
 
+type Pixel struct {
+	Color color.NRGBA
+	X, Y  int
+}
+
 func Hide(img image.Image, text string, opts ...Option) image.Image {
 	bounds := img.Bounds()
 	width, height := bounds.Dx(), bounds.Dy()
 
 	newImg := image.NewNRGBA(bounds)
 
-	lilInt := int64ToBytesLE(int64(len(text)))
-	log.Println(len(text), lilInt)
-	t := string(lilInt[:]) + text
-	count := 0
+	// Get all available pixels
+	// so we can transform that array after
+	availablePixels := make([]Pixel, 0, width*height/8)
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
 			i := img.At(x, y).(color.NRGBA)
+			if checkOptions(img, x, y, opts) {
+				availablePixels = append(availablePixels, Pixel{i, x, y})
+			}
+			newImg.Set(x, y, i)
+		}
+	}
 
-			if count/8 <= len(t)-1 && checkOptions(img, x, y, opts) {
-				arr := []byte{i.R, i.G, i.B}
-				for arri, c := range arr {
-					if count/8 >= len(t) {
-						continue
-					}
-					char := t[count/8]
-					arr[arri] = encode(char, c, count)
-					count++
+	// Add the length of the text to the beginning of the text
+	lilInt := int64ToBytesLE(int64(len(text)))
+	log.Println(len(text), lilInt)
+	t := string(lilInt[:]) + text
+
+	count := 0
+	for _, pixel := range availablePixels {
+		if count/8 <= len(t)-1 && checkOptions(img, pixel.X, pixel.Y, opts) {
+			arr := []byte{pixel.Color.R, pixel.Color.G, pixel.Color.B}
+			for arri, c := range arr {
+				if count/8 >= len(t) {
+					continue
 				}
-
-				c := color.NRGBA{
-					R: arr[0], G: arr[1], B: arr[2], A: i.A,
-				}
-
-				newImg.Set(x, y, c)
-			} else {
-				newImg.Set(x, y, i)
+				char := t[count/8]
+				arr[arri] = encode(char, c, count)
+				count++
 			}
 
+			c := color.NRGBA{
+				R: arr[0], G: arr[1], B: arr[2], A: pixel.Color.A,
+			}
+
+			newImg.Set(pixel.X, pixel.Y, c)
+		} else {
+			newImg.Set(pixel.X, pixel.Y, pixel.Color)
 		}
+
 	}
 
 	return newImg

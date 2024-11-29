@@ -33,13 +33,12 @@ func main() {
 	CreateImage(newImg)
 
 	result, size := Reveal(newImg, opts...)
-
-	result, err = DecryptAES(result[:size], key)
+	result, err = DecryptAES(result[:], key)
 	if err != nil {
 		panic(err)
 	}
 
 	r := result
-	log.Println(r == text)
+	log.Println(r == text, size == int64(len(cipher)))
 	log.Println(r)
 }

@@ -10,26 +10,33 @@ func Reveal(img image.Image, opts ...Option) (string, int64) {
 	bounds := img.Bounds()
 	width, height := bounds.Dx(), bounds.Dy()
 
+	availablePixels := make([]Pixel, 0, width*height/8)
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			i := img.At(x, y).(color.NRGBA)
+			if checkOptions(img, x, y, opts) {
+				availablePixels = append(availablePixels, Pixel{i, x, y})
+			}
+		}
+	}
+
 	result := make([]byte, 0, width*height/8)
 	curr := byte(0)
 	count := 0
-	for y := 0; y < height; y++ {
-		for x := 0; x < width; x++ {
-			im := img.At(x, y).(color.NRGBA)
-			if !checkOptions(img, x, y, opts) {
-				continue
-			}
-
-			for _, c := range []byte{im.R, im.G, im.B} {
-				curr = decode(curr, c, count)
-				count++
-				if count&7 == 0 {
-					result = append(result, curr)
-					curr = byte(0)
-				}
-			}
-
+	for _, pixel := range availablePixels {
+		if !checkOptions(img, pixel.X, pixel.Y, opts) {
+			continue
 		}
+
+		for _, c := range []byte{pixel.Color.R, pixel.Color.G, pixel.Color.B} {
+			curr = decode(curr, c, count)
+			count++
+			if count&7 == 0 {
+				result = append(result, curr)
+				curr = byte(0)
+			}
+		}
+
 	}
 
 	lilInt := result[:4]
@@ -37,7 +44,7 @@ func Reveal(img image.Image, opts ...Option) (string, int64) {
 
 	log.Println(size, lilInt)
 
-	return string(result[4:]), size
+	return string(result[4:][:size]), size
 }
 
 func decode(char byte, c uint8, i int) uint8 {
