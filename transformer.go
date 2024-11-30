@@ -15,3 +15,9 @@ func ReverseTransform() Transformer {
 		slices.Reverse(*pixels)
 	}
 }
+
+func SimpleEllipticTransformer(seed []byte) Transformer {
+	return func(pixels *[]Pixel) {
+		shuffleSliceDeterministic(*pixels, seed)
+	}
+}

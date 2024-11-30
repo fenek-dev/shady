@@ -8,7 +8,8 @@ import (
 
 func main() {
 	key := []byte("thisis32byteslongpassphrase12341")
-	text := "Lorem Ipsum is simply dummy text of the printing and typesetting industry."
+	seed := []byte("thisisalongseed")
+	text := "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and"
 
 	cipher, err := EncryptAES(text, key)
 	if err != nil {
@@ -29,6 +30,7 @@ func main() {
 		},
 		Transforms: []Transformer{
 			ReverseTransform(),
+			SimpleEllipticTransformer(seed),
 		},
 	}
 
