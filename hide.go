@@ -12,13 +12,18 @@ type Pixel struct {
 	X, Y  int
 }
 
-type Opts struct {
+type ArgsOptions struct {
+	IgnoreEmptyChannels bool
+}
+
+type Args struct {
 	Conditions   []Condition
 	Transformers []Transformer
 	Noisers      []Transformer
+	Options      *ArgsOptions
 }
 
-func Hide(img image.Image, text string, opts *Opts) image.Image {
+func Hide(img image.Image, text string, args *Args) image.Image {
 	bounds := img.Bounds()
 	width, height := bounds.Dx(), bounds.Dy()
 
@@ -30,7 +35,7 @@ func Hide(img image.Image, text string, opts *Opts) image.Image {
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
 			i := img.At(x, y).(color.NRGBA)
-			if checkOptions(img, x, y, opts.Conditions) {
+			if checkOptions(img, x, y, args.Conditions) {
 				availablePixels = append(availablePixels, Pixel{i, x, y})
 			}
 			newImg.Set(x, y, i)
@@ -38,9 +43,9 @@ func Hide(img image.Image, text string, opts *Opts) image.Image {
 	}
 
 	// Noisers must be applied before the transformers
-	applyTransformers(&availablePixels, opts.Noisers)
+	applyTransformers(&availablePixels, args.Noisers)
 
-	applyTransformers(&availablePixels, opts.Transformers)
+	applyTransformers(&availablePixels, args.Transformers)
 
 	// Add the length of the text to the beginning of the text
 	lilInt := int64ToBytesLE(int64(len(text)))
@@ -52,6 +57,9 @@ func Hide(img image.Image, text string, opts *Opts) image.Image {
 		if count/8 <= len(t)-1 {
 			arr := []byte{pixel.Color.R, pixel.Color.G, pixel.Color.B}
 			for arri, c := range arr {
+				if args.Options.IgnoreEmptyChannels && c <= 1 {
+					continue
+				}
 				if count/8 >= len(t) {
 					continue
 				}
