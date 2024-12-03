@@ -20,7 +20,7 @@ func Reveal(img image.Image, opts *Opts) (string, int64) {
 		}
 	}
 
-	applyTransformers(&availablePixels, opts.Transforms)
+	applyTransformers(&availablePixels, opts.Transformers)
 
 	result := make([]byte, 0, width*height/8)
 	curr := byte(0)

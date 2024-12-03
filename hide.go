@@ -13,8 +13,9 @@ type Pixel struct {
 }
 
 type Opts struct {
-	Conditions []Condition
-	Transforms []Transformer
+	Conditions   []Condition
+	Transformers []Transformer
+	Noisers      []Transformer
 }
 
 func Hide(img image.Image, text string, opts *Opts) image.Image {
@@ -36,7 +37,10 @@ func Hide(img image.Image, text string, opts *Opts) image.Image {
 		}
 	}
 
-	applyTransformers(&availablePixels, opts.Transforms)
+	// Noisers must be applied before the transformers
+	applyTransformers(&availablePixels, opts.Noisers)
+
+	applyTransformers(&availablePixels, opts.Transformers)
 
 	// Add the length of the text to the beginning of the text
 	lilInt := int64ToBytesLE(int64(len(text)))

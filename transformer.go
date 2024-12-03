@@ -1,6 +1,8 @@
 package main
 
-import "slices"
+import (
+	"slices"
+)
 
 type Transformer func(pixels *[]Pixel)
 
@@ -19,5 +21,23 @@ func ReverseTransform() Transformer {
 func SimpleEllipticTransformer(seed []byte) Transformer {
 	return func(pixels *[]Pixel) {
 		shuffleSliceDeterministic(*pixels, seed)
+	}
+}
+
+func SimpleNoiseTransformer(value int) Transformer {
+	return func(pixels *[]Pixel) {
+		for i, p := range *pixels {
+			c := addNoiseToColor(p.Color, value)
+			(*pixels)[i].Color = c
+		}
+	}
+}
+
+func SimpleNoiseWithoutEmptyChannelsTransformer(value int) Transformer {
+	return func(pixels *[]Pixel) {
+		for i, p := range *pixels {
+			c := addNoiseToColorWithoutEmptyChannels(p.Color, value)
+			(*pixels)[i].Color = c
+		}
 	}
 }

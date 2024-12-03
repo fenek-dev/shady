@@ -28,9 +28,12 @@ func main() {
 		Conditions: []Condition{
 			EmptyCondition(),
 		},
-		Transforms: []Transformer{
+		Transformers: []Transformer{
 			ReverseTransform(),
 			SimpleEllipticTransformer(seed),
+		},
+		Noisers: []Transformer{
+			SimpleNoiseWithoutEmptyChannelsTransformer(4),
 		},
 	}
 
