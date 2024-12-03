@@ -1,0 +1,1 @@
+A simple tool to hide some data inside png files
